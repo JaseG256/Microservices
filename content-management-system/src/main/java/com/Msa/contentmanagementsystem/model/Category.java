@@ -1,21 +1,26 @@
 package com.Msa.contentmanagementsystem.model;
 
-import org.hibernate.annotations.GenericGenerator;
+import lombok.Builder;
+import lombok.Data;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.UUID;
 
-@Entity
-@Table(name = "category")
+@Data
+@Document(collection = "categories")
 public class Category {
 
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid2")
     private String id;
 
     private String name;
+
+    @Builder
+    public static Category newCategory(String name){
+        final Category category = new Category();
+        category.setId(UUID.randomUUID().toString());
+        category.setName(name);
+        return category;
+    }
 }
