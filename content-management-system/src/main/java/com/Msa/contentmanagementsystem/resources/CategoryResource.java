@@ -1,10 +1,13 @@
 package com.Msa.contentmanagementsystem.resources;
 
 import com.Msa.contentmanagementsystem.model.Category;
+import com.Msa.contentmanagementsystem.service.CategoryService;
 import com.Msa.contentmanagementsystem.vo.CategoryRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,30 +16,35 @@ import java.util.List;
 @RequestMapping("/api/category")
 public class CategoryResource {
 
+    private final CategoryService categoryService;
+
+    public CategoryResource(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
+
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Category> findOne(@PathVariable("id") String id) {
-        return ResponseEntity.ok(new Category());
+    public ResponseEntity<Mono<Category>> findOne(@PathVariable("id") String id) {
+        return ResponseEntity.ok(categoryService.findOne(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> findAll() {
-        return ResponseEntity.ok(Arrays.asList(new Category(), new Category()));
+    public ResponseEntity<Flux<Category>> findAll() {
+        return ResponseEntity.ok(categoryService.findAll());
     }
 
-    @PostMapping
-    public ResponseEntity<Category> newCategory() {
-        return new ResponseEntity<>(new Category(), HttpStatus.CREATED);
+    @PostMapping(value = "/create")
+    public ResponseEntity<Mono<Category>> newCategory(CategoryRequest request) {
+        return new ResponseEntity<>(categoryService.create(request), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeCategory(@PathVariable("id") String id) {
-
+    public Mono<Void> removeCategory(@PathVariable("id") String id) {
+        return categoryService.delete(id);
     }
 
-    @PutMapping("/{id}")  public ResponseEntity<Category> updateCategory(@PathVariable("id") String id,
-                                                                         CategoryRequest category){
-        return new ResponseEntity<>(new Category(), HttpStatus.OK);
+    @PutMapping("/{id}")
+    public ResponseEntity<Mono<Category>> updateCategory(@PathVariable("id") String id, CategoryRequest category){
+        return new ResponseEntity<>(categoryService.create(category), HttpStatus.OK);
     }
-
 }

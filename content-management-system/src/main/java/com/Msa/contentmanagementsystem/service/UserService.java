@@ -4,6 +4,8 @@ import com.Msa.contentmanagementsystem.model.User;
 import com.Msa.contentmanagementsystem.repository.UserRepository;
 import com.Msa.contentmanagementsystem.vo.UserRequest;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -16,35 +18,32 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User update(String id, UserRequest userRequest){
-        final User user = this.userRepository.findById(id).get();
-        user.setIdentity(userRequest.getIdentity());
-        user.setName(userRequest.getName());
-        user.setRole(userRequest.getRole());
-        return this.userRepository.save(user);
+    public Mono<User> update(String id, UserRequest userRequest){
+        return this.userRepository.findById(id).flatMap(user -> {
+            user.setName(userRequest.getName());
+            user.setRole(userRequest.getRole());
+            return userRepository.save(user);
+        });
     }
 
-    public User create(UserRequest userRequest){
-        User user = new User();
+    public Mono<User> create(UserRequest userRequest){
+        final User user = new User();
         user.setIdentity(UUID.randomUUID().toString());
-        user.setIdentity(userRequest.getIdentity());
         user.setName(userRequest.getName());
         user.setRole(userRequest.getRole());
-        return this.userRepository.save(user);
+        return userRepository.save(user);
     }
 
-    public void delete(String id){
-        final User user = this.userRepository.findById(id).isPresent() ?
-                this.userRepository.findById(id).get() : new User();
-        this.userRepository.delete(user);
+    public Mono<Void> delete(String id){
+        return this.userRepository.deleteById(id);
     }
 
-    public Iterable<User> findAll(){
+    public Flux<User> findAll(){
         return this.userRepository.findAll();
     }
 
-    public User findOne(String id){
-        return this.userRepository.findById(id).get();
+    public Mono<User> findOne(String id){
+        return this.userRepository.findById(id);
     }
 
 }
